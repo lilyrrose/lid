@@ -6,7 +6,7 @@ use rand::{
     rngs::OsRng,
     Rng,
 };
-use std::sync::{Arc, Mutex};
+use spin::mutex::Mutex;
 
 const BASE: u64 = 36;
 
@@ -24,7 +24,7 @@ const ID_LENGTH: usize = PREFIX_LENGTH + SEQUENCE_LENGTH;
 
 lazy_static::lazy_static! {
     static ref BASE_ALPHABET: Vec<u8> = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes().to_vec();
-    static ref GLOBAL_LID: Arc<Mutex<LID>> = Arc::new(Mutex::new(LID::new()));
+    static ref GLOBAL_LID: Mutex<LID> = Mutex::new(LID::new());
 }
 
 pub struct LID {
@@ -90,10 +90,7 @@ impl Default for LID {
 
 #[must_use]
 pub fn generate_lid() -> String {
-    GLOBAL_LID
-        .lock()
-        .unwrap_or_else(std::sync::PoisonError::into_inner)
-        .generate()
+    GLOBAL_LID.lock().generate()
 }
 
 #[cfg(test)]

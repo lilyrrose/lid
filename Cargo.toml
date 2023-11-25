@@ -1,11 +1,18 @@
 [package]
 name = "lid"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
+description = "Extremely fast, small, url-friendly, and unique ID generator."
+license = "MIT OR Apache-2.0"
+documentation = "https://docs.rs/lid"
+repository = "https://git.radial.gg/opus/lid"
+categories = ["id"]
+keywords = ["id"]
 
 [dependencies]
 lazy_static = "1.4"
 rand = "0.8"
+spin = { version = "0.9.8", default-features = false, features = ["spin_mutex"]}
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
