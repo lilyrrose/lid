@@ -8,9 +8,9 @@ use rand::{
 };
 use std::sync::{Arc, Mutex};
 
-const BASE: u64 = 32;
+const BASE: u64 = 36;
 
-// I decided 28 total bytes is good enough and leaves us with an improbable collision chance.
+// I decided 28 total bytes is good enough and leaves us with an extremely improbable collision chance.
 // When modifying, keep in mind that SEQUENCE_LENGTH is prng while PREFIX_LENGTH uses OsRng.
 const PREFIX_LENGTH: usize = 16;
 const SEQUENCE_LENGTH: usize = 12;
@@ -23,29 +23,29 @@ const MAX_INCREMENT: u64 = 1000;
 const ID_LENGTH: usize = PREFIX_LENGTH + SEQUENCE_LENGTH;
 
 lazy_static::lazy_static! {
-    static ref BASE_ALPHABET: Vec<u8> = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".as_bytes().to_vec();
-    static ref GLOBAL_OID: Arc<Mutex<Oid>> = Arc::new(Mutex::new(Oid::new()));
+    static ref BASE_ALPHABET: Vec<u8> = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes().to_vec();
+    static ref GLOBAL_LID: Arc<Mutex<LID>> = Arc::new(Mutex::new(LID::new()));
 }
 
-pub struct Oid {
+pub struct LID {
     prefix: Vec<u8>,
     sequence: u64,
     increment: u64,
     inner_buffer: Vec<u8>,
 }
 
-impl Oid {
+impl LID {
     #[must_use]
     pub fn new() -> Self {
-        let mut oid = Self {
+        let mut lid = Self {
             prefix: vec![0; PREFIX_LENGTH],
             sequence: 0,
             increment: 0,
             inner_buffer: vec![0; ID_LENGTH],
         };
-        oid.reset();
-        oid.new_prefix();
-        oid
+        lid.reset();
+        lid.new_prefix();
+        lid
     }
 
     fn reset(&mut self) {
@@ -82,15 +82,15 @@ impl Oid {
     }
 }
 
-impl Default for Oid {
+impl Default for LID {
     fn default() -> Self {
         Self::new()
     }
 }
 
 #[must_use]
-pub fn generate_oid() -> String {
-    GLOBAL_OID
+pub fn generate_lid() -> String {
+    GLOBAL_LID
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner)
         .generate()
@@ -106,7 +106,7 @@ mod tests {
         let num_iterations = 10_000_000;
 
         for _ in 0..num_iterations {
-            let id = super::generate_oid();
+            let id = super::generate_lid();
             assert!(!ids.contains(&id), "Duplicate ID found: {id}");
             ids.insert(id);
         }

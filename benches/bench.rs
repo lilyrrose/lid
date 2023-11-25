@@ -1,15 +1,15 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use oid::{generate_oid, Oid};
+use lid::{generate_lid, LID};
 
 fn benchmark(c: &mut Criterion) {
-    let mut oid = Oid::new();
+    let mut lid = LID::new();
 
-    c.bench_function("generate_oid() (global)", |b| {
-        b.iter(|| black_box(generate_oid()));
+    c.bench_function("generate_lid() (global)", |b| {
+        b.iter(|| black_box(generate_lid()));
     });
 
-    c.bench_function("oid.generate()", |b| {
-        b.iter(|| black_box(oid.generate()));
+    c.bench_function("lid.generate()", |b| {
+        b.iter(|| black_box(lid.generate()));
     });
 }
 

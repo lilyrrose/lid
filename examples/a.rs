@@ -1,3 +1,3 @@
 fn main() {
-    println!("{}", oid::generate_oid());
+    println!("{}", lid::generate_lid());
 }
