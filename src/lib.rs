@@ -74,10 +74,12 @@ impl LID {
         }
     }
 
+    /// Generates a new ID.
     pub fn generate(&mut self) -> String {
         self.new_sequence();
         self.inner_buffer[..PREFIX_LENGTH].copy_from_slice(&self.prefix);
         Self::copy_sequence_into(&mut self.inner_buffer[PREFIX_LENGTH..], self.sequence);
+        // Safety: The alphabet used ensures that the bytes are valid UTF-8.
         unsafe { String::from_utf8_unchecked(self.inner_buffer.clone()) }
     }
 }
@@ -88,6 +90,8 @@ impl Default for LID {
     }
 }
 
+/// Generates an ID using the global LID instance.
+/// This is slightly slower than creating your own [LID] instance due to using a [Mutex].
 #[must_use]
 pub fn generate_lid() -> String {
     GLOBAL_LID.lock().generate()
