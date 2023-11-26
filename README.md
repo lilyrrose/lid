@@ -4,7 +4,7 @@ I wanted something that I could trust with being unique enough, while also being
 
 For some of my projects I used a [flakeid](https://github.com/boundary/flake) implementation I [wrote in Rust](https://git.radial.gg/opus/flakeid-rs), but this requires it to be ran as its own service per-machine if it's being shared by multiple services.
 
-By default this uses Base32 and 28 bytes total, This gives approx. 1393796574908163946345982392040522594123776 (32^28) possible IDs.
+By default this uses Base36 and 28 bytes total, This gives approx. 37711171281396032013366321198900157303750656 (36^28) possible IDs.
 
 # Example usage
 ```rust
