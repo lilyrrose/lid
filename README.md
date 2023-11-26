@@ -8,13 +8,13 @@ By default this uses Base32 and 28 bytes total, This gives approx. 1393796574908
 
 # Example usage
 ```rust
-use lid::LID;
+use lid::{LID, generate_lid};
 
 fn main() {
     // This uses the global Mutex LID instance. It's slightly slower due to the Mutex.
-    println!("{}", lid::generate_lid());
+    println!("{}", generate_lid());
 
-    let mut lid = LID::default();
+    let mut lid = LID::<12, 8>::new(); // This will give you a 20 byte ID.
     println!("{}", lid.generate());
 }
 ```

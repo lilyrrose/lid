@@ -9,6 +9,12 @@ repository = "https://git.radial.gg/opus/lid"
 categories = ["id"]
 keywords = ["id"]
 
+[features]
+default = ["base36"]
+base32 = []
+base36 = []
+base62 = []
+
 [dependencies]
 lazy_static = "1.4"
 rand = "0.8"
