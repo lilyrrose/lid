@@ -2,10 +2,10 @@
 name = "lid"
 version = "0.2.1"
 edition = "2021"
-description = "Extremely fast, small, url-friendly, and unique ID generator."
+description = "Extremely fast, customizable, and unique ID generation."
 license = "MIT OR Apache-2.0"
 documentation = "https://docs.rs/lid"
-repository = "https://git.radial.gg/opus/lid"
+repository = "https://git.radial.gg/lily/lid"
 categories = ["id"]
 keywords = ["id"]
 
@@ -22,7 +22,7 @@ rand = "0.8"
 
 # For globally instanced LID
 lazy_static = { version = "1.4", optional = true }
-spin = { version = "0.9.8", default-features = false, features = ["spin_mutex"], optional = true}
+spin = { version = "0.9", default-features = false, features = ["spin_mutex"], optional = true}
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
