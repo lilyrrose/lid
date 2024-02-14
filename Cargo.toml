@@ -1,6 +1,6 @@
 [package]
 name = "lid"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 description = "Extremely fast, customizable, and unique ID generation."
 license = "MIT OR Apache-2.0"
@@ -26,6 +26,9 @@ spin = { version = "0.9", default-features = false, features = ["spin_mutex"], o
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
+colorid = "0"
+nanoid = "0.4"
+snowflaked = "1"
 
 [[bench]]
 name = "bench"
