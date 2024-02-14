@@ -11,9 +11,7 @@
 //! If not using the base62 feature, the default ID size will be 28 bytes.
 //!
 //! ```
-//! use lid::{LID, generate_lid};
-//!
-//! println!("{}", generate_lid());
+//! use lid::LID;
 //!
 //! // Or, create your own instance.
 //! let mut lid = LID::<12, 8>::new(); // This will give you a 20 byte ID.
@@ -41,7 +39,6 @@ use rand::{
     rngs::OsRng,
     Rng,
 };
-use spin::mutex::Mutex;
 
 #[cfg(feature = "base32")]
 mod base32 {
@@ -79,16 +76,23 @@ use base36::{BASE, BASE_ALPHABET};
 #[cfg(feature = "base62")]
 use base62::{BASE, BASE_ALPHABET};
 
-const MIN_INCREMENT: u64 = 100;
-const MAX_INCREMENT: u64 = 1000;
+pub mod configs {
+    use super::LID;
 
-lazy_static::lazy_static! {
-    static ref GLOBAL_LID: Mutex<LID> = Mutex::new(LID::new());
+    #[must_use]
+    pub fn distributed() -> LID {
+        LID::default()
+    }
 }
 
-// Base62 has to have smaller defaults because MAX_SEQUENCE is too big otherwise.
+// Base62 has to have a smaller default length because MAX_SEQUENCE is too big otherwise.
 #[cfg(feature = "base62")]
-pub struct LID<const PREFIX_LENGTH: usize = 12, const SEQUENCE_LENGTH: usize = 8> {
+pub struct LID<
+    const PREFIX_LENGTH: usize = 12,
+    const SEQUENCE_LENGTH: usize = 8,
+    const MIN_INCREMENT: u64 = 100,
+    const MAX_INCREMENT: u64 = 1000,
+> {
     prefix: Vec<u8>,
     sequence: u64,
     increment: u64,
@@ -98,14 +102,25 @@ pub struct LID<const PREFIX_LENGTH: usize = 12, const SEQUENCE_LENGTH: usize = 8
 #[cfg(not(feature = "base62"))]
 /// The combined total of `PREFIX_LENGTH` and `SEQUENCE_LENGTH` is the length of the ID.
 /// By default, this is 28 bytes.
-pub struct LID<const PREFIX_LENGTH: usize = 16, const SEQUENCE_LENGTH: usize = 12> {
+pub struct LID<
+    const PREFIX_LENGTH: usize = 16,
+    const SEQUENCE_LENGTH: usize = 12,
+    const MIN_INCREMENT: u64 = 100,
+    const MAX_INCREMENT: u64 = 1000,
+> {
     prefix: Vec<u8>,
     sequence: u64,
     increment: u64,
     inner_buffer: Vec<u8>,
 }
 
-impl<const PREFIX_LENGTH: usize, const SEQUENCE_LENGTH: usize> LID<PREFIX_LENGTH, SEQUENCE_LENGTH> {
+impl<
+        const PREFIX_LENGTH: usize,
+        const SEQUENCE_LENGTH: usize,
+        const MIN_INCREMENT: u64,
+        const MAX_INCREMENT: u64,
+    > LID<PREFIX_LENGTH, SEQUENCE_LENGTH, MIN_INCREMENT, MAX_INCREMENT>
+{
     const MAX_SEQUENCE: u64 = BASE.pow(SEQUENCE_LENGTH as u32);
     const ID_LENGTH: usize = PREFIX_LENGTH + SEQUENCE_LENGTH;
 
@@ -158,32 +173,33 @@ impl<const PREFIX_LENGTH: usize, const SEQUENCE_LENGTH: usize> LID<PREFIX_LENGTH
     }
 }
 
-impl<const PREFIX_LENGTH: usize, const SEQUENCE_LENGTH: usize> Default
-    for LID<PREFIX_LENGTH, SEQUENCE_LENGTH>
+impl<
+        const PREFIX_LENGTH: usize,
+        const SEQUENCE_LENGTH: usize,
+        const MIN_INCREMENT: u64,
+        const MAX_INCREMENT: u64,
+    > Default for LID<PREFIX_LENGTH, SEQUENCE_LENGTH, MIN_INCREMENT, MAX_INCREMENT>
 {
     fn default() -> Self {
         Self::new()
     }
 }
 
-/// Generates an ID using the global LID instance.
-/// This is slightly slower than creating your own [LID] instance due to using a [Mutex].
-#[must_use]
-pub fn generate_lid() -> String {
-    GLOBAL_LID.lock().generate()
-}
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
 
+    use crate::*;
+
     #[test]
     fn test_uniqueness() {
+        let mut lid = configs::distributed();
+
         let mut ids = HashSet::new();
         let num_iterations = 10_000_000;
 
         for _ in 0..num_iterations {
-            let id = super::generate_lid();
+            let id = lid.generate();
             assert!(!ids.contains(&id), "Duplicate ID found: {id}");
             ids.insert(id);
         }
