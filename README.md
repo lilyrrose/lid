@@ -1,5 +1,7 @@
 # lid (Lily's ID)
 
+MSRV: 1.60.0
+
 I wanted something that I could trust with being unique enough, while also being extremely fast and light on system
 resources.
 
