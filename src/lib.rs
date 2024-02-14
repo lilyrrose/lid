@@ -42,34 +42,28 @@ use rand::{
 
 #[cfg(feature = "base32")]
 mod base32 {
-    pub const BASE: u64 = 32;
-
     pub const BASE_ALPHABET: &[u8] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".as_bytes();
 }
 
 #[cfg(feature = "base36")]
 mod base36 {
-    pub const BASE: u64 = 36;
-
     pub const BASE_ALPHABET: &[u8] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes();
 }
 
 #[cfg(feature = "base62")]
 mod base62 {
-    pub const BASE: u64 = 62;
-
     pub const BASE_ALPHABET: &[u8] =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes();
 }
 
 #[cfg(feature = "base32")]
-use base32::{BASE, BASE_ALPHABET};
+use base32::BASE_ALPHABET;
 
 #[cfg(feature = "base36")]
-use base36::{BASE, BASE_ALPHABET};
+use base36::BASE_ALPHABET;
 
 #[cfg(feature = "base62")]
-use base62::{BASE, BASE_ALPHABET};
+use base62::BASE_ALPHABET;
 
 pub mod configs {
     use super::LID;
@@ -79,6 +73,8 @@ pub mod configs {
         LID::default()
     }
 }
+
+const BASE: u64 = BASE_ALPHABET.len() as u64;
 
 // Base62 has to have a smaller default length because MAX_SEQUENCE is too big otherwise.
 #[cfg(feature = "base62")]
