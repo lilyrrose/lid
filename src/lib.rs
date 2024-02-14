@@ -21,7 +21,7 @@
 #![allow(clippy::cast_possible_truncation)]
 
 #[cfg(not(any(feature = "base32", feature = "base36", feature = "base62")))]
-compile_error!("You must enable one of the features! base32 is the default.");
+compile_error!("You must enable one of the alphabet related features! 'base32' is the default.");
 
 #[cfg(any(
     all(feature = "base32", feature = "base36"),
@@ -31,7 +31,7 @@ compile_error!("You must enable one of the features! base32 is the default.");
     all(feature = "base62", feature = "base32"),
     all(feature = "base62", feature = "base36"),
 ))]
-compile_error!("You must only have one of the features enabled! base32 is the default.");
+compile_error!("You must only have one of the alphabet related features enabled!");
 
 use rand::{
     distributions::{Distribution, Uniform},
@@ -39,39 +39,48 @@ use rand::{
     Rng,
 };
 
-#[cfg(feature = "base32")]
-mod base32 {
-    pub const BASE_ALPHABET: &[u8] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".as_bytes();
-}
-
-#[cfg(feature = "base36")]
-mod base36 {
-    pub const BASE_ALPHABET: &[u8] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes();
-}
-
-#[cfg(feature = "base62")]
-mod base62 {
-    pub const BASE_ALPHABET: &[u8] =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes();
-}
-
-#[cfg(feature = "base32")]
-use base32::BASE_ALPHABET;
-
-#[cfg(feature = "base36")]
-use base36::BASE_ALPHABET;
-
-#[cfg(feature = "base62")]
-use base62::BASE_ALPHABET;
-
 pub mod configs {
     use super::LID;
 
     #[must_use]
-    pub fn distributed() -> LID {
+    pub fn new_distributed() -> LID {
         LID::default()
     }
 }
+
+#[cfg(feature = "easy")]
+pub mod easy {
+    use lazy_static::lazy_static;
+    use spin::Mutex;
+
+    use crate::{configs::new_distributed, LID};
+
+    lazy_static! {
+        static ref DISTRIBUTED_INST: Mutex<LID> = Mutex::new(new_distributed());
+    }
+
+    #[must_use]
+    #[cfg(not(feature = "no-unsafe"))]
+    pub fn generate_distributed() -> String {
+        DISTRIBUTED_INST.lock().generate()
+    }
+
+    #[must_use]
+    #[cfg(feature = "no-unsafe")]
+    pub fn generate_distributed() -> Result<String, std::string::FromUtf8Error> {
+        DISTRIBUTED_INST.lock().generate()
+    }
+}
+
+#[cfg(feature = "base32")]
+pub const BASE_ALPHABET: &[u8] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".as_bytes();
+
+#[cfg(feature = "base36")]
+pub const BASE_ALPHABET: &[u8] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes();
+
+#[cfg(feature = "base62")]
+pub const BASE_ALPHABET: &[u8] =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes();
 
 const BASE: u64 = BASE_ALPHABET.len() as u64;
 
@@ -196,7 +205,7 @@ mod tests {
     #[test]
     #[cfg(not(feature = "no-unsafe"))]
     fn test_uniqueness() {
-        let mut lid = configs::distributed();
+        let mut lid = configs::new_distributed();
 
         let mut ids = HashSet::new();
         let num_iterations = 10_000_000;
@@ -217,7 +226,7 @@ mod tests {
     #[test]
     #[cfg(feature = "no-unsafe")]
     fn test_uniqueness() -> Result<(), Box<dyn std::error::Error>> {
-        let mut lid = configs::distributed();
+        let mut lid = configs::new_distributed();
 
         let mut ids = HashSet::new();
         let num_iterations = 10_000_000;
@@ -234,6 +243,23 @@ mod tests {
             "Number of unique IDs does not match the number of iterations"
         );
 
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(all(feature = "easy", not(feature = "no-unsafe")))]
+    fn test_easy() {
+        use self::easy::generate_distributed;
+
+        let _ = generate_distributed();
+    }
+
+    #[test]
+    #[cfg(all(feature = "easy", feature = "no-unsafe"))]
+    fn test_easy() -> Result<(), Box<dyn std::error::Error>> {
+        use self::easy::generate_distributed;
+
+        let _ = generate_distributed()?;
         Ok(())
     }
 }
