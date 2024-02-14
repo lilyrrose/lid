@@ -13,9 +13,8 @@
 //! ```
 //! use lid::LID;
 //!
-//! // Or, create your own instance.
 //! let mut lid = LID::<12, 8>::new(); // This will give you a 20 byte ID.
-//! println!("{}", lid.generate());
+//! println!("{:?}", lid.generate());
 //! ```
 
 #![warn(clippy::pedantic)]
@@ -155,12 +154,24 @@ impl<
     }
 
     /// Generates a new ID.
+    #[cfg(not(feature = "no-unsafe"))]
     pub fn generate(&mut self) -> String {
         self.new_sequence();
         self.inner_buffer[..PREFIX_LENGTH].copy_from_slice(&self.prefix);
         Self::copy_sequence_into(&mut self.inner_buffer[PREFIX_LENGTH..], self.sequence);
+
         // Safety: The alphabet used ensures that the bytes are valid UTF-8.
         unsafe { String::from_utf8_unchecked(self.inner_buffer.clone()) }
+    }
+
+    /// Generates a new ID.
+    #[cfg(feature = "no-unsafe")]
+    pub fn generate(&mut self) -> Result<String, std::string::FromUtf8Error> {
+        self.new_sequence();
+        self.inner_buffer[..PREFIX_LENGTH].copy_from_slice(&self.prefix);
+        Self::copy_sequence_into(&mut self.inner_buffer[PREFIX_LENGTH..], self.sequence);
+
+        String::from_utf8(self.inner_buffer.clone())
     }
 }
 
@@ -183,6 +194,7 @@ mod tests {
     use crate::*;
 
     #[test]
+    #[cfg(not(feature = "no-unsafe"))]
     fn test_uniqueness() {
         let mut lid = configs::distributed();
 
@@ -200,5 +212,28 @@ mod tests {
             num_iterations,
             "Number of unique IDs does not match the number of iterations"
         );
+    }
+
+    #[test]
+    #[cfg(feature = "no-unsafe")]
+    fn test_uniqueness() -> Result<(), Box<dyn std::error::Error>> {
+        let mut lid = configs::distributed();
+
+        let mut ids = HashSet::new();
+        let num_iterations = 10_000_000;
+
+        for _ in 0..num_iterations {
+            let id = lid.generate()?;
+            assert!(!ids.contains(&id), "Duplicate ID found: {id}");
+            ids.insert(id);
+        }
+
+        assert_eq!(
+            ids.len(),
+            num_iterations,
+            "Number of unique IDs does not match the number of iterations"
+        );
+
+        Ok(())
     }
 }

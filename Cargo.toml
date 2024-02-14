@@ -15,6 +15,7 @@ base32 = []
 base36 = []
 base62 = []
 easy = ["lazy_static", "spin"]
+no-unsafe = []
 
 [dependencies]
 rand = "0.8"
