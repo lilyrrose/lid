@@ -44,27 +44,22 @@ use rand::{
 mod base32 {
     pub const BASE: u64 = 32;
 
-    lazy_static::lazy_static! {
-        pub static ref BASE_ALPHABET: Vec<u8> = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".as_bytes().to_vec();
-    }
+    pub const BASE_ALPHABET: &[u8] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".as_bytes();
 }
 
 #[cfg(feature = "base36")]
 mod base36 {
     pub const BASE: u64 = 36;
 
-    lazy_static::lazy_static! {
-        pub static ref BASE_ALPHABET: Vec<u8> = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes().to_vec();
-    }
+    pub const BASE_ALPHABET: &[u8] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes();
 }
 
 #[cfg(feature = "base62")]
 mod base62 {
     pub const BASE: u64 = 62;
 
-    lazy_static::lazy_static! {
-        pub static ref BASE_ALPHABET: Vec<u8> = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes().to_vec();
-    }
+    pub const BASE_ALPHABET: &[u8] =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".as_bytes();
 }
 
 #[cfg(feature = "base32")]

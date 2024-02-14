@@ -14,11 +14,14 @@ default = ["base36"]
 base32 = []
 base36 = []
 base62 = []
+easy = ["lazy_static", "spin"]
 
 [dependencies]
-lazy_static = "1.4"
 rand = "0.8"
-spin = { version = "0.9.8", default-features = false, features = ["spin_mutex"]}
+
+# For globally instanced LID
+lazy_static = { version = "1.4", optional = true }
+spin = { version = "0.9.8", default-features = false, features = ["spin_mutex"], optional = true}
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
